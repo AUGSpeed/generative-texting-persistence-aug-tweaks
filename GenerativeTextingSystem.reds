@@ -26,6 +26,7 @@ public class GenerativeTextingSystem extends ScriptableService {
     private let lastActiveCharacter: CharacterSetting = CharacterSetting.Panam;
     private let unread: Bool = false;
     private let disabled: Bool = false;
+    private let sentModdedNotif: Bool = false;
 
     @runtimeProperty("ModSettings.mod", "Generative Texting")
     @runtimeProperty("ModSettings.displayName", "Player Gender")
@@ -183,6 +184,16 @@ public class GenerativeTextingSystem extends ScriptableService {
             return;
         }
 
+        if Equals(s"\(event.GetKey())", "IK_Escape") {
+            if this.chatOpen {
+                this.npcSelected = false;
+                this.chatOpen = false;
+                this.HideModChat();
+            } else {
+                return;
+            }
+        }
+
         if this.isTyping {
             if Equals(s"\(event.GetKey())", "IK_Enter") {
                 this.isTyping = false;
@@ -298,6 +309,7 @@ public class GenerativeTextingSystem extends ScriptableService {
             this.callbackSystem.RegisterCallback(n"Input/Key", this, n"OnKeyInput", true)
                 .AddTarget(InputTarget.Key(EInputKey.IK_T));
             if NotEquals(this.lastActiveCharacter, this.character) {
+                ConsoleLog(s"Last Active Character: \(this.lastActiveCharacter), New Character: \(this.character)");
                 this.lastActiveCharacter = this.character;
             }
         } else {

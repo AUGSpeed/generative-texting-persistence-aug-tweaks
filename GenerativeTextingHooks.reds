@@ -180,7 +180,7 @@ protected cb func OnCombatStateChanged(newState: Int32) -> Bool {  // newState u
 public final func PushCustomSMSNotification(text: String) -> Void {
     let notificationData: gameuiGenericNotificationData;
     let userData: ref<PhoneMessageNotificationViewData> = new PhoneMessageNotificationViewData();
-    let action = new OpenPhoneMessageAction();
+    let action = new OpenGenerativePhoneMessageAction();
     action.m_phoneSystem = this.m_PhoneSystem;
     userData.title = GetCharacterLocalizedName(GetTextingSystem().character);
     userData.SMSText = text;
@@ -194,3 +194,58 @@ public final func PushCustomSMSNotification(text: String) -> Void {
     this.AddNewNotificationData(notificationData);
 }
 
+public class OpenGenerativePhoneMessageAction extends GenericNotificationBaseAction {
+
+  public let m_phoneSystem: wref<PhoneSystem>;
+
+  public let m_journalEntry: wref<JournalEntry>;
+
+  public func Execute(data: ref<IScriptable>) -> Bool {
+    GetTextingSystem().ToggleNpcSelected(true);
+    let request: ref<UsePhoneRequest> = new UsePhoneRequest();
+    request.MessageToOpen = this.m_journalEntry;
+    ConsoleLog("Calling OpenGenerativePhoneMessageAction");
+    GetTextingSystem().sentModdedNotif = true;
+    this.m_phoneSystem.QueueRequest(request);
+    return true;
+  }
+
+  public func GetLabel() -> String {
+    return "[DB] Open Message";
+  }
+}
+
+@wrapMethod(PhoneSystem)
+private final func OnUsePhone(request: ref<UsePhoneRequest>) -> Void {
+    ConsoleLog("CallingUsePhone");
+    wrappedMethod(request);
+    ConsoleLog("Finished Wrapped Method");
+    if (GetTextingSystem().sentModdedNotif) {
+        let delaySystem = GameInstance.GetDelaySystem(GetGameInstance());
+        let inputInt: Int32 = 2;
+        let delay: Float = 0.1;
+        let isAffectedByTimeDilation: Bool = false;
+        delaySystem.DelayCallback(CustomCallback.Create(inputInt), delay, isAffectedByTimeDilation);
+    }
+}
+
+public class CustomCallback extends DelayCallback {
+  // all the data that your Call function needs
+  private let myInt: Int32;
+
+  public func Call() {
+    // custom function that i want to be called when the specified time has passed
+    ConsoleLog("Modded Notif is True");
+    GetTextingSystem().defaultPhoneController.DisableContactsInput();
+    GetTextingSystem().ToggleContactList(false);
+    GetTextingSystem().sentModdedNotif = false;
+  }
+
+  public static func Create(inputInt: Int32) -> ref<CustomCallback> {
+    // use this way to create your Callback class in one line
+    let self = new CustomCallback();
+
+    self.myInt = inputInt;
+    return self;
+  }
+}

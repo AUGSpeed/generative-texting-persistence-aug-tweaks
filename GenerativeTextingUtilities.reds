@@ -51,8 +51,8 @@ public func isContactValidForAI(character: String) -> Bool{
             return true;
         //case mod_misty
         //  return true;
-        case "delamain":
-            return true;
+        //case "delamain":
+        //    return true;
         default:
             return false;
     }
