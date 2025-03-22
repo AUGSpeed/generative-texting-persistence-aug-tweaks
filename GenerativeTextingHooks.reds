@@ -30,7 +30,7 @@ private final func RefreshInputHints(contactData: wref<ContactData>) -> Void {
         ConsoleLog(s"Contact name: \(contactName)");
         // Check if the active character is selected
 
-        if GetHttpRequestSystem().isGenerating {
+        if GetHttpRequestSystem().isGenerating || GetTextingSystem().sentModdedNotif {
             return;
         }
 
@@ -182,6 +182,7 @@ public final func PushCustomSMSNotification(text: String) -> Void {
     let userData: ref<PhoneMessageNotificationViewData> = new PhoneMessageNotificationViewData();
     let action = new OpenGenerativePhoneMessageAction();
     action.m_phoneSystem = this.m_PhoneSystem;
+    GetTextingSystem().sentModdedNotif = true;
     userData.title = GetCharacterLocalizedName(GetTextingSystem().character);
     userData.SMSText = text;
     userData.animation = n"notification_phone_MSG";
@@ -200,12 +201,13 @@ public class OpenGenerativePhoneMessageAction extends GenericNotificationBaseAct
 
   public let m_journalEntry: wref<JournalEntry>;
 
+  public let m_characterName: String;
+
   public func Execute(data: ref<IScriptable>) -> Bool {
     GetTextingSystem().ToggleNpcSelected(true);
     let request: ref<UsePhoneRequest> = new UsePhoneRequest();
     request.MessageToOpen = this.m_journalEntry;
     ConsoleLog("Calling OpenGenerativePhoneMessageAction");
-    GetTextingSystem().sentModdedNotif = true;
     this.m_phoneSystem.QueueRequest(request);
     return true;
   }
